@@ -1,0 +1,11 @@
+// Bootstrap 5 — full import
+// To cherry-pick modules, replace with individual @use statements
+@use 'bootstrap/scss/bootstrap';
+
+// ── Design tokens ────────────────────────────────────────────────────────────
+:root {
+  --ledger-income: #198754;
+  --ledger-expense: #dc3545;
+}
+
+// Background is intentionally omitted — Bootstrap's data-bs-theme handles it.

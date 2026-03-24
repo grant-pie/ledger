@@ -1,0 +1,309 @@
+<!-- Navbar -->
+<nav
+  class="navbar navbar-expand-lg navbar-dark"
+  [class.bg-primary]="!themeService.isDark"
+  [class.bg-dark]="themeService.isDark"
+  [class.border-bottom]="themeService.isDark"
+>
+  <div class="container gap-2">
+    <span class="navbar-brand fw-bold">Ledger</span>
+
+    <div class="dropdown ms-auto">
+      <button
+        class="btn btn-outline-light btn-sm dropdown-toggle"
+        (click)="showCurrencyDropdown = !showCurrencyDropdown"
+      >
+        {{ activeCurrency }}
+      </button>
+      <ul
+        class="dropdown-menu dropdown-menu-end"
+        [class.show]="showCurrencyDropdown"
+        style="max-height: 260px; overflow-y: auto;"
+      >
+        <li *ngFor="let c of currencies">
+          <button
+            class="dropdown-item d-flex justify-content-between"
+            [class.active]="c.code === activeCurrency"
+            (click)="setCurrency(c.code)"
+          >
+            <span class="fw-semibold me-3">{{ c.code }}</span>
+            <span class="text-muted">{{ c.name }}</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <button
+      class="btn btn-outline-light btn-sm"
+      (click)="themeService.toggle()"
+      [title]="themeService.isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    >
+      {{ themeService.isDark ? '&#9788;' : '&#9790;' }}
+    </button>
+
+    <button class="btn btn-outline-light btn-sm" (click)="logout()">
+      Sign Out
+    </button>
+  </div>
+</nav>
+
+<div class="container py-4">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && !error">
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Total Income</p>
+            <h4 class="text-success mb-0">{{ totalIncome | currency: activeCurrency }}</h4>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Total Expenses</p>
+            <h4 class="text-danger mb-0">{{ totalExpenses | currency: activeCurrency }}</h4>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Balance</p>
+            <h4
+              class="mb-0"
+              [class.text-success]="balance >= 0"
+              [class.text-danger]="balance < 0"
+            >
+              {{ balance | currency: activeCurrency }}
+            </h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Transactions</h5>
+        <button
+          class="btn btn-sm"
+          [class.btn-primary]="!themeService.isDark"
+          [class.btn-outline-light]="themeService.isDark"
+          (click)="openAddModal()"
+        >
+          + Add Transaction
+        </button>
+      </div>
+
+      <!-- Category filter -->
+      <div class="px-4 py-2 border-bottom d-flex flex-wrap gap-2">
+        <button
+          class="btn btn-sm"
+          [class.btn-dark]="selectedCategory === null"
+          [class.btn-outline-secondary]="selectedCategory !== null"
+          (click)="selectedCategory = null"
+        >
+          All
+        </button>
+        <button
+          *ngFor="let cat of filterCategories"
+          class="btn btn-sm text-capitalize"
+          [class.btn-dark]="selectedCategory === cat"
+          [class.btn-outline-secondary]="selectedCategory !== cat"
+          (click)="selectedCategory = cat"
+        >
+          {{ cat }}
+        </button>
+      </div>
+
+      <div class="card-body p-0">
+        <div *ngIf="filteredTransactions.length === 0" class="text-center text-muted py-5">
+          {{ transactions.length === 0 ? 'No transactions yet. Add your first one!' : 'No transactions in this category.' }}
+        </div>
+
+        <ul class="list-group list-group-flush">
+          <li
+            *ngFor="let t of filteredTransactions"
+            class="list-group-item d-flex justify-content-between align-items-center px-4 py-3"
+          >
+            <div class="flex-grow-1">
+              <span class="fw-semibold">{{ t.title }}</span>
+              <span class="badge bg-secondary ms-2 text-capitalize">{{ t.category }}</span>
+              <p class="text-muted small mb-0">{{ t.date | date: 'mediumDate' }}</p>
+              <p *ngIf="t.notes" class="text-muted small mb-0 fst-italic">{{ t.notes }}</p>
+            </div>
+
+            <span
+              class="fw-bold fs-6 me-3"
+              [class.text-success]="isIncome(t)"
+              [class.text-danger]="!isIncome(t)"
+            >
+              {{ isIncome(t) ? '+' : '-' }}{{ t.amount | currency: activeCurrency }}
+            </span>
+
+            <div class="d-flex gap-2">
+              <button
+                class="btn btn-outline-secondary btn-sm"
+                (click)="openEditModal(t)"
+              >
+                Edit
+              </button>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                (click)="deleteTransaction(t.id)"
+                [disabled]="deleting === t.id"
+              >
+                <span *ngIf="deleting === t.id" class="spinner-border spinner-border-sm"></span>
+                <span *ngIf="deleting !== t.id">Delete</span>
+              </button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
+
+<!-- ── Modal ──────────────────────────────────────────────────────────────── -->
+<div
+  *ngIf="showModal"
+  class="modal fade show"
+  style="display: block;"
+  (click)="closeModal()"
+>
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ editingTransaction ? 'Edit Transaction' : 'Add Transaction' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="formError" class="alert alert-danger">{{ formError }}</div>
+
+        <form [formGroup]="form" (ngSubmit)="saveTransaction()" id="txForm">
+          <!-- Title -->
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="title"
+              [class.is-invalid]="form.get('title')?.invalid && form.get('title')?.touched"
+            />
+            <div class="invalid-feedback">
+              <span *ngIf="form.get('title')?.errors?.['required']">Title is required.</span>
+              <span *ngIf="form.get('title')?.errors?.['maxlength']">Title cannot exceed 100 characters.</span>
+            </div>
+          </div>
+
+          <!-- Amount -->
+          <div class="mb-3">
+            <label class="form-label">Amount</label>
+            <div class="input-group">
+              <span class="input-group-text">{{ activeCurrencySymbol }}</span>
+              <input
+                type="number"
+                class="form-control"
+                formControlName="amount"
+                min="0.01"
+                step="0.01"
+                [class.is-invalid]="form.get('amount')?.invalid && form.get('amount')?.touched"
+              />
+              <div class="invalid-feedback">
+                <span *ngIf="form.get('amount')?.errors?.['required']">Amount is required.</span>
+                <span *ngIf="form.get('amount')?.errors?.['min']">Amount must be greater than 0.</span>
+                <span *ngIf="form.get('amount')?.errors?.['max']">Amount cannot exceed 999,999,999.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Type & Category -->
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Type</label>
+              <select class="form-select" formControlName="type">
+                <option *ngFor="let t of types" [value]="t" class="text-capitalize">
+                  {{ t }}
+                </option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Category</label>
+              <select class="form-select" formControlName="category">
+                <option *ngFor="let c of categories" [value]="c" class="text-capitalize">
+                  {{ c }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Date -->
+          <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input
+              type="date"
+              class="form-control"
+              formControlName="date"
+              [class.is-invalid]="form.get('date')?.invalid && form.get('date')?.touched"
+            />
+            <div class="invalid-feedback">Date is required.</div>
+          </div>
+
+          <!-- Notes -->
+          <div class="mb-3">
+            <label class="form-label">Notes <span class="text-muted">(optional)</span></label>
+            <textarea
+              class="form-control"
+              formControlName="notes"
+              rows="2"
+              maxlength="500"
+              [class.is-invalid]="form.get('notes')?.invalid && form.get('notes')?.touched"
+            ></textarea>
+            <div class="invalid-feedback">Notes cannot exceed 500 characters.</div>
+            <div class="form-text text-end">
+              {{ (form.get('notes')?.value?.length ?? 0) }}/500
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form="txForm"
+          class="btn btn-primary"
+          [disabled]="saving"
+        >
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+          {{ editingTransaction ? 'Save Changes' : 'Add Transaction' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal backdrop -->
+<div *ngIf="showModal" class="modal-backdrop fade show"></div>

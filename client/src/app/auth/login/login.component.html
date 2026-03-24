@@ -1,0 +1,61 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
+    <div class="card-body p-4">
+      <h2 class="card-title text-center mb-4">Sign in to Ledger</h2>
+
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+        <div *ngIf="showResendLink" class="mt-2">
+          <a routerLink="/auth/resend-verification" class="alert-link">
+            Resend verification email →
+          </a>
+        </div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            id="email"
+            type="email"
+            class="form-control"
+            formControlName="email"
+            [class.is-invalid]="
+              form.get('email')?.invalid && form.get('email')?.touched
+            "
+          />
+          <div class="invalid-feedback">Enter a valid email address.</div>
+        </div>
+
+        <div class="mb-4">
+          <label for="password" class="form-label">Password</label>
+          <input
+            id="password"
+            type="password"
+            class="form-control"
+            formControlName="password"
+            [class.is-invalid]="
+              form.get('password')?.invalid && form.get('password')?.touched
+            "
+          />
+          <div class="invalid-feedback">
+            Password must be at least 8 characters.
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
+          <span
+            *ngIf="loading"
+            class="spinner-border spinner-border-sm me-2"
+          ></span>
+          Sign In
+        </button>
+      </form>
+
+      <p class="text-center mt-3 mb-0">
+        Don't have an account?
+        <a routerLink="/auth/register">Register</a>
+      </p>
+    </div>
+  </div>
+</div>

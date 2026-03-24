@@ -1,0 +1,99 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
+    <div class="card-body p-4">
+
+      <!-- Success state -->
+      <ng-container *ngIf="registeredEmail; else registerForm">
+        <div class="text-center py-2">
+          <div class="mb-3" style="font-size: 3rem;">📧</div>
+          <h4 class="mb-2">Check your inbox</h4>
+          <p class="text-muted mb-4">
+            We sent a verification link to<br />
+            <strong>{{ registeredEmail }}</strong>
+          </p>
+          <p class="text-muted small">
+            Click the link in the email to activate your account.
+            Once verified you can <a routerLink="/auth/login">sign in</a>.<br /><br />
+            Didn't receive it?
+            <a routerLink="/auth/resend-verification">Resend verification email</a>
+          </p>
+        </div>
+      </ng-container>
+
+      <!-- Registration form -->
+      <ng-template #registerForm>
+        <h2 class="card-title text-center mb-4">Create an Account</h2>
+
+        <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input
+              id="email"
+              type="email"
+              class="form-control"
+              formControlName="email"
+              [class.is-invalid]="
+                form.get('email')?.invalid && form.get('email')?.touched
+              "
+            />
+            <div class="invalid-feedback">Enter a valid email address.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input
+              id="password"
+              type="password"
+              class="form-control"
+              formControlName="password"
+              [class.is-invalid]="
+                form.get('password')?.invalid && form.get('password')?.touched
+              "
+            />
+            <div class="invalid-feedback">
+              Password must be at least 8 characters.
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              class="form-control"
+              formControlName="confirmPassword"
+              [class.is-invalid]="
+                (form.get('confirmPassword')?.touched && form.get('confirmPassword')?.invalid) ||
+                (form.get('confirmPassword')?.touched && form.hasError('passwordMismatch'))
+              "
+            />
+            <div class="invalid-feedback">
+              <span *ngIf="form.get('confirmPassword')?.errors?.['required']">Please confirm your password.</span>
+              <span *ngIf="!form.get('confirmPassword')?.errors?.['required'] && form.hasError('passwordMismatch')">Passwords do not match.</span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary w-100"
+            [disabled]="loading"
+          >
+            <span
+              *ngIf="loading"
+              class="spinner-border spinner-border-sm me-2"
+            ></span>
+            Register
+          </button>
+        </form>
+
+        <p class="text-center mt-3 mb-0">
+          Already have an account?
+          <a routerLink="/auth/login">Sign in</a>
+        </p>
+      </ng-template>
+
+    </div>
+  </div>
+</div>
