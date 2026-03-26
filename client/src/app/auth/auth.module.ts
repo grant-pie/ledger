@@ -7,9 +7,11 @@ import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { ResendVerificationComponent } from './resend-verification/resend-verification.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 @NgModule({
-  declarations: [LoginComponent, RegisterComponent, VerifyEmailComponent, ResendVerificationComponent],
+  declarations: [LoginComponent, RegisterComponent, VerifyEmailComponent, ResendVerificationComponent, ForgotPasswordComponent, ResetPasswordComponent],
   imports: [CommonModule, ReactiveFormsModule, RouterModule, AuthRoutingModule],
 })
 export class AuthModule {}

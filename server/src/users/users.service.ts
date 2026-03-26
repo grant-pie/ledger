@@ -58,4 +58,21 @@ export class UsersService {
     user.emailVerificationToken = null;
     return this.usersRepository.save(user);
   }
+
+  async findByPasswordResetToken(token: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { passwordResetToken: token } });
+  }
+
+  async setPasswordResetToken(user: User, token: string, expiresAt: Date): Promise<User> {
+    user.passwordResetToken = token;
+    user.passwordResetTokenExpiresAt = expiresAt;
+    return this.usersRepository.save(user);
+  }
+
+  async updatePassword(user: User, hashedPassword: string): Promise<User> {
+    user.password = hashedPassword;
+    user.passwordResetToken = null;
+    user.passwordResetTokenExpiresAt = null;
+    return this.usersRepository.save(user);
+  }
 }

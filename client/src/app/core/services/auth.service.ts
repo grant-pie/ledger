@@ -42,6 +42,14 @@ export class AuthService {
     return this.http.post<{ message: string }>(`${this.apiUrl}/resend-verification`, { email });
   }
 
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, { token, password });
+  }
+
   verifyEmail(token: string): Observable<AuthResponse> {
     return this.http
       .get<AuthResponse>(`${this.apiUrl}/verify-email`, { params: { token } })

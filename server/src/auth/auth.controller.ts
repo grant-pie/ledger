@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthResponse, RegisterResponse } from '../shared/types/transaction.types';
 
 @Controller('auth')
@@ -29,9 +31,23 @@ export class AuthController {
     return this.authService.resendVerificationEmail(dto.email);
   }
 
-  @SkipThrottle() // Called directly from an email link — no throttle needed
+  @SkipThrottle()
   @Get('verify-email')
   verifyEmail(@Query('token') token: string): Promise<AuthResponse> {
     return this.authService.verifyEmail(token);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 600_000 } })
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @SkipThrottle()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
+    return this.authService.resetPassword(dto.token, dto.password);
   }
 }

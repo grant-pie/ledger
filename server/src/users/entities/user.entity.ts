@@ -31,6 +31,12 @@ export class User {
   @Column({ nullable: true, type: 'timestamp' })
   lastVerificationEmailSentAt: Date | null;
 
+  @Column({ nullable: true, type: 'text' })
+  passwordResetToken: string | null;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  passwordResetTokenExpiresAt: Date | null;
+
   @OneToMany(() => Transaction, (transaction) => transaction.user, {
     cascade: true,
   })

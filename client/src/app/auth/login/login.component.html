@@ -1,4 +1,4 @@
-<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+<div class="min-vh-100 d-flex align-items-center justify-content-center">
   <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
     <div class="card-body p-4">
       <h2 class="card-title text-center mb-4">Sign in to Ledger</h2>
@@ -28,7 +28,10 @@
         </div>
 
         <div class="mb-4">
-          <label for="password" class="form-label">Password</label>
+          <div class="d-flex justify-content-between align-items-center">
+            <label for="password" class="form-label mb-0">Password</label>
+            <a routerLink="/auth/forgot-password" class="small">Forgot password?</a>
+          </div>
           <input
             id="password"
             type="password"

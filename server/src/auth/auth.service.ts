@@ -95,6 +95,47 @@ export class AuthService {
     };
   }
 
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const GENERIC_RESPONSE = {
+      message: 'If an account exists for that email, a password reset link has been sent.',
+    };
+
+    const user = await this.usersService.findByEmail(email);
+    if (!user || !user.isEmailVerified) return GENERIC_RESPONSE;
+
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await this.usersService.setPasswordResetToken(user, token, expiresAt);
+
+    try {
+      await this.emailService.sendPasswordResetEmail(user.email, token);
+    } catch (err) {
+      console.error('Failed to send password reset email:', err?.message);
+      throw new InternalServerErrorException(
+        'We could not send a password reset email. Please try again later.',
+      );
+    }
+
+    return GENERIC_RESPONSE;
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    const user = await this.usersService.findByPasswordResetToken(token);
+
+    if (
+      !user ||
+      !user.passwordResetTokenExpiresAt ||
+      new Date() > user.passwordResetTokenExpiresAt
+    ) {
+      throw new BadRequestException('This password reset link is invalid or has expired.');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await this.usersService.updatePassword(user, hashed);
+
+    return { message: 'Your password has been reset. You can now log in.' };
+  }
+
   async resendVerificationEmail(email: string): Promise<{ message: string }> {
     const GENERIC_RESPONSE = {
       message: 'If an unverified account exists for that email, a new verification link has been sent.',

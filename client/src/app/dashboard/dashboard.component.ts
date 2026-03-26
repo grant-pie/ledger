@@ -117,7 +117,7 @@ export class DashboardComponent implements OnInit {
     this.saving = true;
     this.formError = '';
 
-    const payload = this.form.value;
+    const payload = { ...this.form.value, amount: Number(this.form.value.amount) };
     const request$ = this.editingTransaction
       ? this.transactionService.update(this.editingTransaction.id, payload)
       : this.transactionService.create(payload);
@@ -128,8 +128,11 @@ export class DashboardComponent implements OnInit {
         this.loadTransactions();
         this.saving = false;
       },
-      error: () => {
-        this.formError = 'Failed to save transaction. Please try again.';
+      error: (err) => {
+        const msg = err?.error?.message;
+        this.formError = Array.isArray(msg)
+          ? msg.join(' ')
+          : (msg ?? 'Failed to save transaction. Please try again.');
         this.saving = false;
       },
     });

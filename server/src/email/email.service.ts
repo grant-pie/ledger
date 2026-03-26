@@ -53,4 +53,44 @@ export class EmailService {
       throw new InternalServerErrorException('Could not send verification email');
     }
   }
+
+  async sendPasswordResetEmail(email: string, token: string): Promise<void> {
+    const link = `${this.appUrl}/auth/reset-password?token=${token}`;
+
+    const { error } = await this.resend.emails.send({
+      from: this.from,
+      to: email,
+      subject: 'Reset your Ledger password',
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color: #0d6efd;">Reset your password</h2>
+          <p>We received a request to reset the password for your Ledger account.</p>
+          <p>Click the button below to choose a new password. This link expires in <strong>1 hour</strong>.</p>
+          <a
+            href="${link}"
+            style="
+              display: inline-block;
+              margin: 16px 0;
+              padding: 12px 24px;
+              background: #0d6efd;
+              color: #fff;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: bold;
+            "
+          >
+            Reset Password
+          </a>
+          <p style="color: #6c757d; font-size: 13px;">
+            If you didn't request a password reset, you can safely ignore this email.
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      this.logger.error('Failed to send password reset email', error);
+      throw new InternalServerErrorException('Could not send password reset email');
+    }
+  }
 }

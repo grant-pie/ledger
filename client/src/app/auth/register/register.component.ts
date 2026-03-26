@@ -51,18 +51,18 @@ export class RegisterComponent {
         this.loading = false;
       },
       error: (err) => {
-        this.error = this.resolveError(err);
+        this.error = this.resolveError(err, email);
         this.loading = false;
       },
     });
   }
 
-  private resolveError(err: any): string {
+  private resolveError(err: any, email?: string): string {
     if (err.status === 0) {
       return 'Unable to reach the server. Please check your connection and try again.';
     }
     if (err.status === 500) {
-      return err?.error?.message ?? 'We could not send a verification email. Please try again later.';
+      return `We could not send a verification email to ${email}. Please double-check the address and try again.`;
     }
     if (err.status >= 500) {
       return 'A server error occurred. Please try again later.';
